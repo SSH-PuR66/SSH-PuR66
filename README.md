@@ -17,4 +17,4 @@ A GAMECHANGER-inspired semantic-search + cited-QA engine over DoD policy. Hybrid
 
 **How I work** — every project ships with tests, an eval harness, and an honest self-critique. Assume it's broken until the tests prove otherwise.
 
-📍 Hudson Valley / NYC metro · 🎯 federal cyber operations · 📫 sergio.w.rdz@gmail.com · 🌐 [sergrdz.pages.dev](https://sergrdz.pages.dev)
+Hudson Valley / NYC metro · federal cyber operations · sergio.w.rdz@gmail.com · [sergrdz.pages.dev](https://sergrdz.pages.dev)
