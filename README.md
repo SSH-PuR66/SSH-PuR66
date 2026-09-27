@@ -2,19 +2,30 @@
 
 I build the defensive tooling analysts actually use, and I'm aiming it at federal cyber operations — taking cybercrime off the board.
 
-**Flagship — [PolicyScout / ArmSky](https://github.com/SSH-PuR66/policy-scout)**
-A GAMECHANGER-inspired semantic-search + cited-QA engine over DoD policy. Hybrid BM25 + TF-IDF retrieval with RRF fusion and MMR, a cross-encoder-shaped reranker that took citation precision from 0.94 → **1.00**, a grounded-LLM composer wired for Azure OpenAI Gov, nDCG + citation-precision gates in CI, and an adversarial critique log on every release. Built against the CDAO analytic-tools ecosystem (GAMECHANGER, Advana, JATIC).
+**Current research**
 
-**Also shipped**
-- **RangeCheck** — authorized network exposure assessment, CVSS-tagged findings
-- **ControlTrace** — STIG-style baseline auditing mapped to NIST 800-53 & MITRE ATT&CK
-- **Tracer** — threat-intel pipeline (Elasticsearch + Neo4j correlation)
-- **SkimmerSentinel**, **Tarpit**, **CivicPulse**, **LicenseLoop** — and the [portfolio](https://sergrdz.pages.dev) itself, hand-built with serverless functions
+**[CVE Replay](https://github.com/SSH-PuR66/cve-replay)** · [Study and results](https://sergrdz.pages.dev/labs/cve-replay/)
+
+Independent offline reproduction of the published **CVE-2026-44431** redirect-header issue, originally reported by **christos-cantina-security**. The harness compares urllib3 2.6.3 and 2.7.0. On 27 September 2026, all 12 expected outcomes matched: six cases per release, including the affected behavior and benign controls. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/cve-replay/actions/runs/36296853726).
+
+**[Call Boundary](https://github.com/SSH-PuR66/call-boundary)** · [Experiment and test record](https://sergrdz.pages.dev/labs/call-boundary/)
+
+A local authorization gate that binds a signed approval to one actor, audience, tool, target, complete arguments, time window, and nonce. The 27 September 2026 run passed **56 tests and 29 controlled vectors**, including replay across processes and restarts. Python, HMAC-SHA256, and SQLite. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/call-boundary/actions/runs/36296849195).
+
+**[Binary Boundary](https://github.com/SSH-PuR66/binary-boundary)** · [Native and decompiler study](https://sergrdz.pages.dev/labs/binary-boundary/)
+
+An original C fixture comparing Boolean decoding and unsigned range checks across O0 and O2 builds. Native execution and Ghidra exports expose where recovered types differ from the source contract. A [fresh 27 September 2026 rerun](https://sergrdz.pages.dev/labs/binary-boundary/verification-2026-09-27.json) matched the recorded native results and decompiler output. It covers every byte value and 21,728 range inputs per build; the full 32-bit input space is not exhausted.
+
+**Proposed work — [Filament PR #1](https://github.com/SSH-PuR66/filament/pull/1)**
+
+Signing checks tied to the selected app, identity, and connected device. The **open pull request** invalidates approval when an input changes and discards stale responses. [Portable CI passed on 12 September](https://github.com/SSH-PuR66/filament/actions/runs/34722602375).
+
+**Earlier projects** — [Tools](https://github.com/SSH-PuR66/Tools) · [DetectLab](https://github.com/SSH-PuR66/detect-lab) · [PolicyScout / ArmSky](https://github.com/SSH-PuR66/policy-scout)
 
 **Credentials** — Cisco Certified in Cybersecurity · (ISC)² Candidate · Blue Team Junior Analyst · 18 Anthropic AI certificates
 
 **Working with** — Python · FastAPI · scikit-learn · Docker · Cloudflare · Neo4j · Elasticsearch · the MITRE ATT&CK framework
 
-**How I work** — every project ships with tests, an eval harness, and an honest self-critique. Assume it's broken until the tests prove otherwise.
+**How I work** — controlled reproductions, inspectable test records, and explicit limits on what the evidence establishes.
 
 Hudson Valley / NYC metro · federal cyber operations · sergio.w.rdz@gmail.com · [sergrdz.pages.dev](https://sergrdz.pages.dev)
