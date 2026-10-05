@@ -1,18 +1,18 @@
-### Sergio Rodriguez — threat analyst & security toolsmith
+### Sergio Rodriguez — security research and engineering
 
-I build the defensive tooling analysts actually use, and I'm aiming it at federal cyber operations — taking cybercrime off the board.
+I study program behavior, reproduce published fixes, and build small tools with inspectable tests.
 
 **Current research**
 
-**[CVE Replay](https://github.com/SSH-PuR66/cve-replay)** · [Study and results](https://sergrdz.pages.dev/labs/cve-replay/)
+**[Afterimage](https://github.com/SSH-PuR66/afterimage)** · [Study and results](https://sergrdz.pages.dev/labs/cve-replay/)
 
-Independent offline reproduction of the published **CVE-2026-44431** redirect-header issue, originally reported by **christos-cantina-security**. The harness compares urllib3 2.6.3 and 2.7.0. On 27 September 2026, all 12 expected outcomes matched: six cases per release, including the affected behavior and benign controls. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/cve-replay/actions/runs/36296853726).
+Independent offline reproduction of the published **CVE-2026-44431** redirect-header issue, originally reported by **christos-cantina-security**. The harness compares urllib3 2.6.3 and 2.7.0. On 27 September 2026, all 12 expected outcomes matched: six cases per release, including the affected behavior and benign controls. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/afterimage/actions/runs/36296853726).
 
-**[Call Boundary](https://github.com/SSH-PuR66/call-boundary)** · [Experiment and test record](https://sergrdz.pages.dev/labs/call-boundary/)
+**[Countersign](https://github.com/SSH-PuR66/countersign)** · [Experiment and test record](https://sergrdz.pages.dev/labs/call-boundary/)
 
-A local authorization gate that binds a signed approval to one actor, audience, tool, target, complete arguments, time window, and nonce. The 27 September 2026 run passed **56 tests and 29 controlled vectors**, including replay across processes and restarts. Python, HMAC-SHA256, and SQLite. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/call-boundary/actions/runs/36296849195).
+A local authorization gate that binds a signed approval to one actor, audience, tool, target, complete arguments, time window, and nonce. The 27 September 2026 run passed **56 tests and 29 controlled vectors**, including replay across processes and restarts. Python, HMAC-SHA256, and SQLite. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/countersign/actions/runs/36296849195).
 
-**[Binary Boundary](https://github.com/SSH-PuR66/binary-boundary)** · [Native and decompiler study](https://sergrdz.pages.dev/labs/binary-boundary/)
+**[Cutline](https://github.com/SSH-PuR66/cutline)** · [Native and decompiler study](https://sergrdz.pages.dev/labs/binary-boundary/)
 
 An original C fixture comparing Boolean decoding and unsigned range checks across O0 and O2 builds. Native execution and Ghidra exports expose where recovered types differ from the source contract. A [fresh 27 September 2026 rerun](https://sergrdz.pages.dev/labs/binary-boundary/verification-2026-09-27.json) matched the recorded native results and decompiler output. It covers every byte value and 21,728 range inputs per build; the full 32-bit input space is not exhausted.
 
