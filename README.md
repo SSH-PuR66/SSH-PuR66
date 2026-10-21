@@ -1,4 +1,8 @@
 # Sergio Rodriguez
+
+**Sergio Rodriguez · SSH-PuR66** — author of the original studies below and maintainer of the repositories linked here. Forks identify their upstream authors and my contribution separately.
+
+[Enter Attack Atlas](https://sergrdz.pages.dev/labs/attack-atlas/) — Faultline, Sealbreak, and False Colors turn three trust-boundary failures into interactive visual studies.
 ### Security research · reverse engineering · adversarial testing
 
 I trace inputs across trust boundaries, build the smallest failing case, and turn the result into a regression you can run.
