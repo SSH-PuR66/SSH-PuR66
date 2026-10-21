@@ -1,35 +1,37 @@
-### Sergio Rodriguez — security research and engineering
+# Sergio Rodriguez
+### Security research · reverse engineering · adversarial testing
 
-I study program behavior, reproduce published fixes, and build small tools with inspectable tests.
+I trace inputs across trust boundaries, build the smallest failing case, and turn the result into a regression you can run.
 
-**Current research**
+I’m an Iona University undergraduate pursuing security research and red-team internships. My public work connects C and Python, Ghidra analysis, protocol behavior, and stateful authorization. The source and evidence are the starting point.
 
-**[Afterimage](https://github.com/SSH-PuR66/afterimage)** · [Study and results](https://sergrdz.pages.dev/labs/cve-replay/)
+[Portfolio](https://sergrdz.pages.dev/) · [Research workbench](https://sergrdz.pages.dev/workbench.html) · [Email](mailto:sergio.w.rdz@gmail.com) · [LinkedIn](https://www.linkedin.com/in/sergio-rodriguez-453551275)
 
-Independent offline reproduction of the published **CVE-2026-44431** redirect-header issue, originally reported by **christos-cantina-security**. The harness compares urllib3 2.6.3 and 2.7.0. On 27 September 2026, all 12 expected outcomes matched: six cases per release, including the affected behavior and benign controls. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/afterimage/actions/runs/36296853726).
+## Three investigations to start with
 
-The companion **[Chunk Lines](https://github.com/SSH-PuR66/afterimage/tree/main/chunk-lines)** study compares pinned urllib3 2.7.0 and 2.8.0 for published CVE-2026-97689. Its 32 bounded offline cases check framing-line handling; they do not establish memory exhaustion or application impact.
+| Investigation | Failure under test | Evidence |
+|---|---|---|
+| **[Cutline](https://github.com/SSH-PuR66/cutline)** | Unsigned addition wraps a range check; decompiler-inferred types differ across optimization levels. | Original C fixtures, O0/O2 builds, Ghidra exports, native reference tests. Each recorded build covers 256 byte values and 21,728 range triples. [Inspect the instrument](https://sergrdz.pages.dev/labs/binary-boundary/). |
+| **[Countersign](https://github.com/SSH-PuR66/countersign)** | A valid tool name survives a changed target, argument, caller, or replay. | Python/HMAC/SQLite reference gate; 56 recorded tests and 29 controlled vectors, including concurrent and cross-process replay. [Inspect the decisions](https://sergrdz.pages.dev/labs/call-boundary/). |
+| **[Afterimage](https://github.com/SSH-PuR66/afterimage)** | Sensitive headers cross a redirect boundary; chunk framing changes across a published fix. | Pinned upstream wheels, before/after results, benign controls, and original reporter attribution. 12 redirect cases and 32 chunk-framing cases. [Inspect the study](https://sergrdz.pages.dev/labs/cve-replay/). |
 
-**[Countersign](https://github.com/SSH-PuR66/countersign)** · [Experiment and test record](https://sergrdz.pages.dev/labs/call-boundary/)
+**Read the evidence:** Cutline and Countersign are original controlled experiments. Afterimage independently reproduces published urllib3 issues. Each repository records the exact tested behavior, revision, and execution boundary.
 
-A local authorization gate that binds a signed approval to one actor, audience, tool, target, complete arguments, time window, and nonce. The 27 September 2026 run passed **56 tests and 29 controlled vectors**, including replay across processes and restarts. Python, HMAC-SHA256, and SQLite. [Inspect the passing regression workflow](https://github.com/SSH-PuR66/countersign/actions/runs/36296849195).
+## How I investigate
 
-**[Cutline](https://github.com/SSH-PuR66/cutline)** · [Native and decompiler study](https://sergrdz.pages.dev/labs/binary-boundary/)
+1. Define what the input controls and which decision it reaches.
+2. Trace the value through source, bytes, state, and output.
+3. Reduce the failure to a deterministic counterexample.
+4. Compare the failure against a benign control and a corrected implementation.
+5. Publish the reproducer, result, and remaining uncertainty together.
 
-An original C fixture comparing Boolean decoding and unsigned range checks across O0 and O2 builds. Native execution and Ghidra exports expose where recovered types differ from the source contract. A [fresh 27 September 2026 rerun](https://sergrdz.pages.dev/labs/binary-boundary/verification-2026-09-27.json) matched the recorded native results and decompiler output. It covers every byte value and 21,728 range inputs per build; the full 32-bit input space is not exhausted.
+The hard part is separating a convincing explanation from a result that survives another run.
 
-**Proposed work — [Filament PR #1](https://github.com/SSH-PuR66/filament/pull/1)**
+## More source
 
-Signing checks tied to the selected app, identity, and connected device. The **open pull request** invalidates approval when an input changes and discards stale responses. [Portable CI passed on 12 September](https://github.com/SSH-PuR66/filament/actions/runs/34722602375).
+[RangeCheck / Tools](https://github.com/SSH-PuR66/Tools) · [DetectLab](https://github.com/SSH-PuR66/detect-lab) · [PolicyScout](https://github.com/SSH-PuR66/policy-scout) · [Filament](https://github.com/SSH-PuR66/filament)
 
-**Earlier projects** — [Tools](https://github.com/SSH-PuR66/Tools) · [DetectLab](https://github.com/SSH-PuR66/detect-lab) · [PolicyScout / ArmSky](https://github.com/SSH-PuR66/policy-scout)
+**Internship focus:** vulnerability research, reverse engineering, application security, and adversarial evaluation.
 
-**Workflow prototype** — [Chairside](https://github.com/SSH-PuR66/chairside) · [Pages edition](https://github.com/SSH-PuR66/chairside-pages). A static dental workflow interface with a scenario calculator and downloadable JSON examples; clinical integrations are not connected.
+Hudson Valley / NYC metro · [sergio.w.rdz@gmail.com](mailto:sergio.w.rdz@gmail.com)
 
-**Credentials** — Cisco Certified in Cybersecurity · (ISC)² Candidate · Blue Team Junior Analyst · 18 Anthropic AI certificates
-
-**Working with** — Python · FastAPI · scikit-learn · Docker · Cloudflare · Neo4j · Elasticsearch · the MITRE ATT&CK framework
-
-**How I work** — controlled reproductions, inspectable test records, and explicit limits on what the evidence establishes.
-
-Hudson Valley / NYC metro · federal cyber operations · sergio.w.rdz@gmail.com · [sergrdz.pages.dev](https://sergrdz.pages.dev)
