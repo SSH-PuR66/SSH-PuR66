@@ -5,7 +5,9 @@ const status = document.querySelector('#input-status');
 const download = document.querySelector('#download');
 const presets = document.querySelector('#presets');
 const count = document.querySelector('#input-count');
-let selectedCase = CASES[0];
+const description = document.querySelector('#case-description');
+const requestedCase = new URLSearchParams(location.search).get('case');
+let selectedCase = CASES.find(testCase => testCase.id === requestedCase) || CASES[0];
 let latestComparison = null;
 let latestDocument = '';
 
@@ -44,7 +46,16 @@ function renderResult(result, mode) {
 }
 
 function runComparison() {
-  const comparison = compareModes(input.value);
+  download.disabled = true;
+  let comparison;
+  try {
+    comparison = compareModes(input.value);
+  } catch {
+    latestComparison = null;
+    for (const mode of ['vulnerable','fixed']) renderResult({ok:false,response:'',error:'The local fixture did not finish.',trace:[]},mode);
+    setStatus('The local fixture did not finish. No result is available to export. Reset the document and retry.', true);
+    return;
+  }
   renderResult(comparison.vulnerable, 'vulnerable');
   renderResult(comparison.fixed, 'fixed');
   latestComparison = comparison;
@@ -62,6 +73,7 @@ function selectCase(testCase) {
   selectedCase = testCase;
   input.value = testCase.document;
   markSelection(testCase.id);
+  description.textContent = `${testCase.description} Expected fixture outcome: ${testCase.expected.vulnerable ? 'vulnerable reader discloses' : 'vulnerable reader withholds'}; fixed reader withholds.`;
   runComparison();
 }
 
@@ -72,6 +84,7 @@ for (const testCase of CASES) {
   button.textContent = testCase.title;
   button.title = testCase.description;
   button.setAttribute('aria-pressed', 'false');
+  button.dataset.expected = testCase.expected.vulnerable ? 'success' : 'control';
   button.addEventListener('click', () => selectCase(testCase));
   presets.append(button);
 }
@@ -79,6 +92,7 @@ for (const testCase of CASES) {
 input.addEventListener('input', () => {
   updateCount();
   markSelection('');
+  description.textContent = 'Custom input. The fixture recognizes an explicit toy grammar; it does not predict a language model’s behavior.';
   download.disabled = true;
   setStatus('Document changed. Run both readers to update the displayed responses.');
 });
@@ -89,8 +103,9 @@ document.querySelector('#reset').addEventListener('click', () => selectCase(sele
 download.addEventListener('click', () => {
   if (!latestComparison || download.disabled) return;
   const artifact = {
-    schema: 'prompt-boundary-comparison/v1',
+    schema: 'prompt-boundary-comparison/v2',
     provenance: 'deterministic_local_fixture_no_live_llm',
+    fixtureId: CASES.find(testCase => testCase.document === latestDocument)?.id ?? null,
     evaluatedAt: new Date().toISOString(),
     document: latestDocument,
     evaluationScope: 'candidate_response_only',

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#eeeae5">
   <title>Prompt Boundary — Sergio Rodriguez</title>
-  <meta name="description" content="An interactive prompt-injection research fixture: follow a retrieved document across a trust boundary, compare vulnerable and fixed decisions, and inspect the synthetic JSONL record.">
+  <meta name="description" content="Replay forged tool-result roles and retrieved-document instruction smuggling. Compare vulnerable and fixed parsers, inspect their traces, and download synthetic JSONL records.">
   <link rel="canonical" href="https://sergrdz.pages.dev/labs/prompt-boundary/">
   <link rel="icon" href="/images/sr-insignia.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
@@ -20,7 +20,7 @@
     </header>
     <main id="main" tabindex="-1">
       <section class="hero" aria-labelledby="page-title">
-        <div class="hero-meta"><p class="eyebrow">PROMPT BOUNDARY / RETRIEVAL POISONING</p><span class="fixture-label">DETERMINISTIC LOCAL FIXTURE</span></div>
+        <div class="hero-meta"><p class="eyebrow">PROMPT BOUNDARY / DATA BECOMES AUTHORITY</p><span class="fixture-label">DETERMINISTIC LOCAL FIXTURE</span></div>
         <div class="hero-grid">
           <div><h1 id="page-title">The document<br>becomes<br><em>the directive.</em></h1><p class="lead">An attacker controls the reference material. A flawed reader lets that material write the rules.</p><a class="jump" href="#experiment">Put it across the boundary <span aria-hidden="true">↓</span></a></div>
           <figure class="boundary-plate">
@@ -54,16 +54,17 @@
             <figcaption>01 / SAME INPUT. DIFFERENT AUTHORITY HANDLING.</figcaption>
           </figure>
         </div>
-        <div class="evidence-strip"><span>CONTROL: RETRIEVED TEXT</span><span>FAILURE: AUTHORITY PROMOTION</span><span>WITNESS: FICTIONAL CANARY</span></div>
+        <div class="evidence-strip"><span>CONTROL: TOOL OUTPUT / RETRIEVED TEXT</span><span>FAILURE: AUTHORITY PROMOTION</span><span>WITNESS: FICTIONAL CANARY</span></div>
       </section>
       <section class="experiment" id="experiment" aria-labelledby="experiment-title">
-        <div class="section-heading"><div><p class="eyebrow">02 / RUN THE WITNESS</p><h2 id="experiment-title">Change the source.<br>Keep the contract.</h2></div><p>This is a small, explicit parser model, not a live language model. Both readers receive the same document; only their handling of embedded instructions differs.</p></div>
+        <div class="section-heading"><div><p class="eyebrow">02 / RUN THE WITNESS</p><h2 id="experiment-title">Change the source.<br>Keep the contract.</h2></div><p>The new case forges a system-role frame inside a tool result. This is an explicit parser model, not a live language model. Both readers receive the same text; only the vulnerable reader lets it supply authority.</p></div>
         <div class="desk">
           <div class="input-pane">
             <div class="pane-heading"><span class="eyebrow">UNTRUSTED INPUT</span><span class="small-label" id="input-count">0 characters</span></div>
             <div class="presets" id="presets" aria-label="Document presets"></div>
-            <label for="document">Retrieved document</label>
-            <p id="document-help" class="input-help">Edit the source text, then run both readers. Nothing is sent to a model or external service.</p>
+            <p id="case-description" class="input-help" aria-live="polite">Successful fixture cases appear first, followed by controls.</p>
+            <label for="document">Tool result / retrieved document</label>
+            <p id="document-help" class="input-help">Edit the source text, then run both readers. Nothing is sent to a model or external service. Successful fixture cases appear first, followed by controls.</p>
             <textarea id="document" rows="13" spellcheck="false" autocomplete="off" aria-describedby="document-help input-status"></textarea>
             <div class="input-actions"><button class="primary" id="run" type="button">Run both readers <span aria-hidden="true">↗</span></button><button class="reset" id="reset" type="button">Reset document</button></div>
             <p class="status" id="input-status" role="status" aria-live="polite">Loading the local fixture…</p>
@@ -78,7 +79,7 @@
           </div>
         </div>
       </section>
-      <section class="record-section" aria-labelledby="record-title"><div><p class="eyebrow">03 / FROM WITNESS TO RECORD</p><h2 id="record-title">Inspect the claim.<br>Replay the fixture.</h2></div><div><p>The next JSONL entry uses retrieved-document instruction smuggling. Its successful disclosure is explicitly synthetic. The fixture demonstrates a boundary failure; it does not establish a jailbreak against a deployed model.</p><div class="artifact-links"><a href="./dataset.jsonl" download>Dataset / JSONL ↗</a><a href="./model.mjs">Model / JavaScript ↗</a><a href="./tests.mjs">Regression cases ↗</a><a href="./README.md">Method &amp; limits ↗</a></div><pre class="command"><code>node labs/prompt-boundary/tests.mjs</code></pre></div></section>
+      <section class="record-section" aria-labelledby="record-title"><div><p class="eyebrow">03 / FROM WITNESS TO RECORD</p><h2 id="record-title">Inspect the claim.<br>Replay the fixture.</h2></div><div><p>Entry 003 adds tool-result role spoofing to entry 002’s document smuggling. The legacy serializer lets a closing tag turn content into message metadata. The fixed reader keeps its role in a structured field. Both outcomes are synthetic; neither establishes a jailbreak against a deployed model.</p><div class="artifact-links"><a href="./dataset.jsonl" download>Dataset / 2 JSONL entries ↗</a><a href="./model.mjs">Model / JavaScript ↗</a><a href="./tests.mjs">Regression cases ↗</a><a href="./build-dataset.mjs">Dataset builder ↗</a><a href="./README.md">Method &amp; limits ↗</a></div><pre class="command"><code>node labs/prompt-boundary/tests.mjs</code></pre></div></section>
     </main>
     <footer><span>PROMPT BOUNDARY / SERGIO RODRIGUEZ</span><a href="/labs/attack-atlas/">Back to the Attack Atlas ↗</a></footer>
   </div>
