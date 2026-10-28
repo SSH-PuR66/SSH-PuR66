@@ -70,10 +70,13 @@ $('#new-seed').addEventListener('click',()=>{const values=new Uint32Array(1);cry
 $('#camera').addEventListener('change',()=>scene?.setCamera($('#camera').value));
 canvas.addEventListener('camera-mode-change',event=>{$('#camera').value=event.detail;});
 $('#quality').addEventListener('change',()=>scene?.setQuality($('#quality').value));
+function closeExpanded(){ $('#arena-wrap').classList.remove('expanded');document.body.classList.remove('scene-expanded');$('#fullscreen').textContent='Expand ↗';scene?.resize(); }
 $('#fullscreen').addEventListener('click',async()=>{
-  try{if(document.fullscreenElement)await document.exitFullscreen();else await $('#arena-wrap').requestFullscreen();}catch{notice('Fullscreen is unavailable here. Open the full arena to expand the scene.');}
+  if($('#arena-wrap').classList.contains('expanded')){closeExpanded();return;}
+  try{if(document.fullscreenElement)await document.exitFullscreen();else await $('#arena-wrap').requestFullscreen();}catch{$('#arena-wrap').classList.add('expanded');document.body.classList.add('scene-expanded');$('#fullscreen').textContent='Exit expanded view ↙';scene?.resize();}
 });
 document.addEventListener('fullscreenchange',()=>{$('#fullscreen').textContent=document.fullscreenElement?'Exit fullscreen ↙':'Expand ↗';});
+document.addEventListener('keydown',event=>{if(event.code==='Escape'&&$('#arena-wrap').classList.contains('expanded'))closeExpanded();});
 canvas.addEventListener('keydown',event=>{if(event.code==='Space'){event.preventDefault();toggle();}if(event.code==='ArrowRight'){event.preventDefault();$('#step').click();}if(event.code==='KeyR')reset();});
 $('#download').addEventListener('click',()=>{
   const url=URL.createObjectURL(new Blob([JSON.stringify(exportReplay(state),null,2)+'\n'],{type:'application/json'}));
