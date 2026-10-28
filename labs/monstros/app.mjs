@@ -8,11 +8,15 @@ if(embedded)document.body.classList.add('embedded');
 let state=createMatch().state,running=false,frame=0,lastTime=0,accumulator=0,lastEventTick=-1;
 
 function notice(text,error=false){$('#notice').textContent=text;$('#notice').classList.toggle('error',error);}
+function labelArena(){
+  $('#arena-state').textContent=state.status==='finished'?'ROUND COMPLETE':running?'MATCH IN PROGRESS':state.tick?'PAUSED / STATE RETAINED':'READY / RUN THE DUEL';
+}
 function labelControls(){
   $('#play').textContent=running?'Pause duel Ⅱ':state.status==='finished'?'Replay duel ↺':'Run duel ▶';
   $('#play').setAttribute('aria-pressed',String(running));
   $('#mode-label').textContent=running?'LOCAL / RUNNING':'LOCAL / PAUSED';
   $('#step').disabled=running||state.status==='finished';
+  labelArena();
 }
 function pause(message){running=false;cancelAnimationFrame(frame);lastTime=0;accumulator=0;labelControls();if(message)notice(message);}
 function reset(){
@@ -202,7 +206,7 @@ function draw(){
 function render(){
   draw();$('#tick').textContent=`TICK ${String(state.tick).padStart(4,'0')} / ${MAX_TICKS}`;
   $('#clock').textContent=(state.tick*STEP_SECONDS).toFixed(2).padStart(5,'0')+'s';
-  $('#arena-state').textContent=state.status==='finished'?'ROUND COMPLETE':running?'MATCH IN PROGRESS':state.tick?'PAUSED / STATE RETAINED':'READY / RUN THE DUEL';
+  labelArena();
   for(const vehicle of state.vehicles){
     const card=$(`#vehicle-${vehicle.id}`),spec=VEHICLES[vehicle.type];card.style.setProperty('--vehicle-color',spec.color);card.style.borderColor=spec.color;
     card.querySelector('h3').textContent=spec.name;card.querySelector('.shield strong').textContent=`${vehicle.shield} / ${spec.shield}`;
