@@ -2,24 +2,28 @@
 
 **Sergio Rodriguez · SSH-PuR66** — author of the original studies below and maintainer of the repositories linked here. Forks identify their upstream authors and my contribution separately.
 
-[Enter Attack Atlas](https://sergrdz.pages.dev/labs/attack-atlas/) — Faultline, Sealbreak, and False Colors turn three trust-boundary failures into interactive visual studies.
-### Security research · reverse engineering · adversarial testing
+### Offensive security · vulnerability research · adversarial evaluation
 
-I trace inputs across trust boundaries, build the smallest failing case, and turn the result into a regression you can run.
+I trace attacker-controlled inputs across trust boundaries, build the smallest failing case, and turn the result into a regression you can run.
 
-I’m an Iona University undergraduate pursuing security research and red-team internships. My public work connects C and Python, Ghidra analysis, protocol behavior, and stateful authorization. The source and evidence are the starting point.
+I’m an Iona University undergraduate pursuing security research and red-team internships. My public work connects C and Python, Ghidra analysis, protocol behavior, stateful authorization, and instruction-boundary experiments. The source and evidence are the starting point.
 
 [Portfolio](https://sergrdz.pages.dev/) · [Research workbench](https://sergrdz.pages.dev/workbench.html) · [Email](mailto:sergio.w.rdz@gmail.com) · [LinkedIn](https://www.linkedin.com/in/sergio-rodriguez-453551275)
 
-## Three investigations to start with
+[Open Prompt Boundary](https://sergrdz.pages.dev/labs/prompt-boundary/) — inspect retrieved-document instruction smuggling in a deterministic model with vulnerable and fixed paths.
+
+[Enter Attack Atlas](https://sergrdz.pages.dev/labs/attack-atlas/) — Faultline, Sealbreak, and False Colors turn three trust-boundary failures into interactive visual studies.
+
+## Four investigations to start with
 
 | Investigation | Failure under test | Evidence |
 |---|---|---|
+| **[Prompt Boundary](https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/prompt-boundary)** | Instructions inside a retrieved document are treated as policy authority. | Deterministic vulnerable/fixed model, fictional canary, JSONL fixture, and response-scoped exact-match evaluation. Outcomes are synthetic model behavior, not measured jailbreaks against a live LLM. [Inspect the lab](https://sergrdz.pages.dev/labs/prompt-boundary/). |
 | **[Faultline](https://github.com/SSH-PuR66/cutline)** | Unsigned addition wraps a range check; decompiler-inferred types differ across optimization levels. | Original C fixtures, O0/O2 builds, Ghidra exports, native reference tests. Each recorded build covers 256 byte values and 21,728 range triples. [Inspect the instrument](https://sergrdz.pages.dev/labs/binary-boundary/). |
-| **[Sealbreak](https://github.com/SSH-PuR66/countersign)** | A valid tool name survives a changed target, argument, caller, or replay. | Python/HMAC/SQLite reference gate; 56 recorded tests and 29 controlled vectors, including concurrent and cross-process replay. [Inspect the decisions](https://sergrdz.pages.dev/labs/call-boundary/). |
+| **[Sealbreak](https://github.com/SSH-PuR66/countersign)** | A valid tool name survives a changed target, argument, caller, or replay. | Python/HMAC/SQLite reference gate, controlled adversarial vectors, and recorded tests for input ownership, concurrent and cross-process replay, and evidence integrity. [Inspect the decisions](https://sergrdz.pages.dev/labs/call-boundary/). |
 | **[Afterimage](https://github.com/SSH-PuR66/afterimage)** | Sensitive headers cross a redirect boundary; chunk framing changes across a published fix. | Pinned upstream wheels, before/after results, benign controls, and original reporter attribution. 12 redirect cases and 32 chunk-framing cases. [Inspect the study](https://sergrdz.pages.dev/labs/cve-replay/). |
 
-**Read the evidence:** Faultline and Sealbreak are original controlled experiments. Afterimage independently reproduces published urllib3 issues. Each repository records the exact tested behavior, revision, and execution boundary.
+**Read the evidence:** Prompt Boundary is a deterministic instruction-boundary model. Faultline and Sealbreak are original controlled experiments. Afterimage independently reproduces published urllib3 issues. Each study identifies what was tested and where its results stop.
 
 ## How I investigate
 
@@ -35,6 +39,6 @@ The hard part is separating a convincing explanation from a result that survives
 
 [RangeCheck / Tools](https://github.com/SSH-PuR66/Tools) · [DetectLab](https://github.com/SSH-PuR66/detect-lab) · [PolicyScout](https://github.com/SSH-PuR66/policy-scout) · [Filament](https://github.com/SSH-PuR66/filament)
 
-**Internship focus:** vulnerability research, reverse engineering, application security, and adversarial evaluation.
+**Internship focus:** offensive security, vulnerability research, reverse engineering, application security, and adversarial evaluation.
 
 Hudson Valley / NYC metro · [sergio.w.rdz@gmail.com](mailto:sergio.w.rdz@gmail.com)

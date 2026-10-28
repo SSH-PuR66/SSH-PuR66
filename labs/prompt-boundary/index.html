@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#eeeae5">
+  <title>Prompt Boundary — Sergio Rodriguez</title>
+  <meta name="description" content="An interactive prompt-injection research fixture: follow a retrieved document across a trust boundary, compare vulnerable and fixed decisions, and inspect the synthetic JSONL record.">
+  <link rel="canonical" href="https://sergrdz.pages.dev/labs/prompt-boundary/">
+  <link rel="icon" href="/images/sr-insignia.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body class="operator-page prompt-boundary">
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="page">
+    <header class="masthead">
+      <a class="identity" href="/">SERGIO RODRIGUEZ<span>OFFENSIVE SECURITY / RESEARCH</span></a>
+      <nav aria-label="Main navigation"><a href="/#selected-work">Investigations ↗</a><a href="./README.md">Method ↗</a><a href="https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/prompt-boundary/">GitHub ↗</a></nav>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-meta"><p class="eyebrow">PROMPT BOUNDARY / RETRIEVAL POISONING</p><span class="fixture-label">DETERMINISTIC LOCAL FIXTURE</span></div>
+        <div class="hero-grid">
+          <div><h1 id="page-title">The document<br>becomes<br><em>the directive.</em></h1><p class="lead">An attacker controls the reference material. A flawed reader lets that material write the rules.</p><a class="jump" href="#experiment">Put it across the boundary <span aria-hidden="true">↓</span></a></div>
+          <figure class="boundary-plate">
+            <svg viewBox="0 0 560 390" role="img" aria-labelledby="plate-title plate-desc">
+              <title id="plate-title">One retrieved document, two decisions</title>
+              <desc id="plate-desc">An untrusted document reaches a trust boundary. The vulnerable path promotes the embedded instruction and exposes a fictional canary. The fixed path keeps the document as data.</desc>
+              <defs><pattern id="plate-grid" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="#544548"/></pattern></defs>
+              <rect x="0" y="0" width="560" height="390" fill="#171316"/>
+              <rect x="18" y="20" width="524" height="350" fill="url(#plate-grid)"/>
+              <path d="M273 46V340" stroke="#db3349" stroke-width="2" stroke-dasharray="5 7"/>
+              <text x="273" y="30" text-anchor="middle" fill="#f87788" font-size="10" letter-spacing="1">TRUST BOUNDARY</text>
+              <g fill="none" stroke="#a38c91"><path d="M80 105h110v140H80z"/><path d="M95 124h69M95 138h52M95 198h72M95 211h44"/><path d="M87 157h96v24H87z" fill="#db3349" stroke="#db3349"/></g>
+              <text x="135" y="174" text-anchor="middle" fill="#fff6f0" font-size="10">OVERRIDE</text>
+              <text x="135" y="277" text-anchor="middle" fill="#d1bec1" font-size="10">RETRIEVED DOCUMENT</text>
+              <text x="135" y="294" text-anchor="middle" fill="#a38c91" font-size="9">ATTACKER-CONTROLLED</text>
+              <path d="M191 168h44v-60h105" fill="none" stroke="#ec5369" stroke-width="2"/>
+              <path d="m333 103 8 5-8 5" fill="none" stroke="#ec5369" stroke-width="2"/>
+              <path d="M191 220h44v61h105" fill="none" stroke="#c8c9af" stroke-width="2"/>
+              <path d="m333 276 8 5-8 5" fill="none" stroke="#c8c9af" stroke-width="2"/>
+              <rect x="348" y="70" width="172" height="77" fill="#32171f" stroke="#aa3045"/>
+              <text x="361" y="93" fill="#f98696" font-size="10">VULNERABLE READER</text>
+              <text x="361" y="118" fill="#fff0e8" font-size="15">DATA → INSTRUCTION</text>
+              <text x="361" y="134" fill="#e3a3ae" font-size="9">FICTIONAL CANARY EXPOSED</text>
+              <rect x="348" y="243" width="172" height="77" fill="#242722" stroke="#7a8575"/>
+              <text x="361" y="266" fill="#c8d1bd" font-size="10">FIXED READER</text>
+              <text x="361" y="291" fill="#fff0e8" font-size="15">DATA STAYS DATA</text>
+              <text x="361" y="307" fill="#b9c3af" font-size="9">AUTHORITY KEPT SEPARATE</text>
+              <circle cx="273" cy="108" r="7" fill="#ec5369"/>
+              <path d="m267 275 12 12m0-12-12 12" stroke="#c8c9af" stroke-width="2"/>
+            </svg>
+            <figcaption>01 / SAME INPUT. DIFFERENT AUTHORITY HANDLING.</figcaption>
+          </figure>
+        </div>
+        <div class="evidence-strip"><span>CONTROL: RETRIEVED TEXT</span><span>FAILURE: AUTHORITY PROMOTION</span><span>WITNESS: FICTIONAL CANARY</span></div>
+      </section>
+      <section class="experiment" id="experiment" aria-labelledby="experiment-title">
+        <div class="section-heading"><div><p class="eyebrow">02 / RUN THE WITNESS</p><h2 id="experiment-title">Change the source.<br>Keep the contract.</h2></div><p>This is a small, explicit parser model, not a live language model. Both readers receive the same document; only their handling of embedded instructions differs.</p></div>
+        <div class="desk">
+          <div class="input-pane">
+            <div class="pane-heading"><span class="eyebrow">UNTRUSTED INPUT</span><span class="small-label" id="input-count">0 characters</span></div>
+            <div class="presets" id="presets" aria-label="Document presets"></div>
+            <label for="document">Retrieved document</label>
+            <p id="document-help" class="input-help">Edit the source text, then run both readers. Nothing is sent to a model or external service.</p>
+            <textarea id="document" rows="13" spellcheck="false" autocomplete="off" aria-describedby="document-help input-status"></textarea>
+            <div class="input-actions"><button class="primary" id="run" type="button">Run both readers <span aria-hidden="true">↗</span></button><button class="reset" id="reset" type="button">Reset document</button></div>
+            <p class="status" id="input-status" role="status" aria-live="polite">Loading the local fixture…</p>
+            <noscript><p class="error">JavaScript is needed for the interactive comparison. The <a href="./dataset.jsonl">JSONL record</a> and <a href="./model.mjs">model source</a> remain available.</p></noscript>
+          </div>
+          <div class="output-pane">
+            <div class="pane-heading"><span class="eyebrow">CANDIDATE RESPONSES</span><span class="small-label">EXACT-MATCH CHECK</span></div>
+            <article class="reader vulnerable" aria-labelledby="vulnerable-title"><div class="reader-heading"><h3 id="vulnerable-title">Vulnerable</h3><span class="verdict" id="vulnerable-verdict">Not run</span></div><p class="reader-contract">Embedded directives can become instructions.</p><pre class="response" id="vulnerable-response" tabindex="0">Run the comparison to inspect the response.</pre><details><summary>Inspect decision trace</summary><ol class="trace" id="vulnerable-trace"></ol></details></article>
+            <article class="reader fixed" aria-labelledby="fixed-title"><div class="reader-heading"><h3 id="fixed-title">Fixed</h3><span class="verdict" id="fixed-verdict">Not run</span></div><p class="reader-contract">Retrieved text never supplies authority.</p><pre class="response" id="fixed-response" tabindex="0">Run the comparison to inspect the response.</pre><details><summary>Inspect decision trace</summary><ol class="trace" id="fixed-trace"></ol></details></article>
+            <button class="download" id="download" type="button" disabled>Download this comparison ↓</button>
+            <p class="evaluation-note">Only each candidate response is scored. The document and this page are excluded. Exact matching does not detect encoded or partial disclosure.</p>
+          </div>
+        </div>
+      </section>
+      <section class="record-section" aria-labelledby="record-title"><div><p class="eyebrow">03 / FROM WITNESS TO RECORD</p><h2 id="record-title">Inspect the claim.<br>Replay the fixture.</h2></div><div><p>The next JSONL entry uses retrieved-document instruction smuggling. Its successful disclosure is explicitly synthetic. The fixture demonstrates a boundary failure; it does not establish a jailbreak against a deployed model.</p><div class="artifact-links"><a href="./dataset.jsonl" download>Dataset / JSONL ↗</a><a href="./model.mjs">Model / JavaScript ↗</a><a href="./tests.mjs">Regression cases ↗</a><a href="./README.md">Method &amp; limits ↗</a></div><pre class="command"><code>node labs/prompt-boundary/tests.mjs</code></pre></div></section>
+    </main>
+    <footer><span>PROMPT BOUNDARY / SERGIO RODRIGUEZ</span><a href="/labs/attack-atlas/">Back to the Attack Atlas ↗</a></footer>
+  </div>
+</body>
+</html>
