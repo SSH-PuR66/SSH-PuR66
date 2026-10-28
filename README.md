@@ -37,7 +37,7 @@ The hard part is separating a convincing explanation from a result that survives
 
 ## Interactive systems
 
-[Monstros Arena](https://sergrdz.pages.dev/labs/monstros/) combines a licensed historical vehicle photograph, attributed seizure and destruction records, and an original illustrated yard scene. Its seeded arcade engine produces a bounded event ledger and recomputable replay files. Fourteen engine checks cover determinism, invalid inputs, tampered events and terminal tick padding. The fictional rules are separate from [Cartel Kit’s sourced model audit](https://sergrdz.pages.dev/case-studies/cartelkit). [Inspect the engine and tests](https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/monstros).
+[Monstros Arena](https://sergrdz.pages.dev/labs/monstros/) combines a licensed historical vehicle photograph, attributed seizure and destruction records, and a WebGL 2 desert yard with three original truck meshes, chase/orbit cameras, rotating wheels, impact effects, and progressive body damage. Twenty-one geometry and damage checks accompany its seeded arcade engine, which produces a bounded event ledger and recomputable replay files. Fourteen engine checks cover determinism, invalid inputs, tampered events and terminal tick padding. The fictional rules are separate from [Cartel Kit’s sourced model audit](https://sergrdz.pages.dev/case-studies/cartelkit). [Inspect the engine and tests](https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/monstros).
 
 [Discuss a scoped project](https://sergrdz.pages.dev/work-with-me): a bounded source review, a reproducible fixture, or an interactive technical demo. Deliverables, fee, schedule and acceptance criteria are agreed before work begins.
 
