@@ -159,5 +159,6 @@ reduced.addEventListener('change',()=>{if(reduced.matches&&running)pause('Reduce
 window.addEventListener('resize',()=>{if(!running)render();});
 if(context){
   for(const element of document.querySelectorAll('button,input,select'))element.disabled=false;
-  $('#poster').hidden=true;reset();
+  // SVG elements do not reflect HTMLElement.hidden into an attribute.
+  $('#poster').setAttribute('hidden','');reset();
 }else notice('Canvas is unavailable in this browser. The source and rules remain accessible.',true);
