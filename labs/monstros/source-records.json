@@ -1,0 +1,21 @@
+{
+  "schema": "monstros-source-records/v1",
+  "reviewed_on": "2026-10-28",
+  "scope": "Historical source records and visual reference. These records do not calibrate the arcade engine.",
+  "image": {
+    "file": "narco-tank-1.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Narco-tank-1.jpg",
+    "author": "ZestyMasterOfZesty",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "changes": "File unchanged. Displayed at a responsive size with a CSS saturation filter; the underlying photograph is unmodified.",
+    "display_license": "CC BY-SA 4.0",
+    "identification": "Commons uploader identifies Monstruo 2010, Jalisco, 2011. Chassis make/model and original photographic provenance are not independently verified here.",
+    "sha256": "13e79c46d2292ed2a57fe21144a12772badfa3fceab68ead6bfe9f3ae48e47a4"
+  },
+  "records": [
+    {"id":"guasave-2026-10","publisher":"FGR via Gabinete de Seguridad","published":"2026-10-05","event_date_precision":"Reported in an announcement; exact seizure date not specified","place":"San Fernando, Guasave, Sinaloa","outcome":"Five improvised armored vehicles seized during a search","vehicles":5,"organizations_named":[],"url":"https://gabinetedeseguridad.gob.mx/contenido/9872/asegura-fgr-en-cateo-cinco-vehiculos-con-blindaje-artesanal"},
+    {"id":"tamaulipas-2026-04","publisher":"FGR via Gabinete de Seguridad","published":"2026-04-12","place":"Tamaulipas","outcome":"18 previously seized vehicles destroyed; linked to 16 investigation files","vehicles":18,"seizure_period":"December 2025 through February 2026","organizations_named":[],"url":"https://gabinetedeseguridad.gob.mx/contenido/8254/fgr-destruye-18-vehiculos-con-blindaje-artesanal","secondary_reporting":{"publisher":"La Jornada","published":"2026-04-12","attribution":"Reported an investigative link to Cartel del Golfo and Cartel del Noreste. The linked government bulletin does not name these organizations.","url":"https://www.jornada.com.mx/noticia/2026/04/12/politica/fgr-destruye-18-monstruos-en-tamaulipas-ligados-a-los-carteles-del-golfo-y-noroeste"}},
+    {"id":"guerrero-2026-01","publisher":"Gabinete de Seguridad","published":"2026-01-05","event_period":"2026-01-02/2026-01-04","place":"Nueva Ciudad Guerrero, Tamaulipas","outcome":"One improvised armored vehicle and firearms seized","vehicles":1,"weapons_as_reported":["two Barrett rifles","four long guns"],"weapon_models":"Not specified in the bulletin","organizations_named":[],"url":"https://gabinetedeseguridad.gob.mx/contenido/7559/el-gabinete-de-seguridad-del-gobierno-de-mexico-informa-acciones-relevantes-del-02-03-y-04-de-enero-de-2026"}
+  ]
+}

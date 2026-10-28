@@ -1,10 +1,10 @@
 # Monstros
 
-An original fictional arcade vehicle duel, made for the Cartel Kit presentation. The vehicles, arena, pulse effects, shield values and movement rules are invented. They are **not** models of real vehicles, weapons, armor, tactics, organizations or geographic locations. The demo does not support the separate Cartel Kit research findings.
+A Cartel Kit vehicle study combining a licensed historical photograph, attributed source records, and an original illustrated arcade scene. The photograph and historical inventories describe real material. The illustrated units, movement, damage, and outcomes remain game abstractions; the archive does not calibrate the engine.
 
 ## Run and inspect
 
-Serve this directory through a static web server, or use the published portfolio lab. No dependencies, API keys, network requests or external services are used by the engine or app. The page links to other portfolio material only when a visitor follows a link.
+Serve this directory through a static web server, or use the published portfolio lab. No dependencies, API keys, network requests or external services are used by the engine or app. Photographs and source records are served locally. External historical sources are visited only when their links are followed.
 
 From the repository root:
 
@@ -33,6 +33,6 @@ This establishes consistency with this engine, not authenticity or a digital sig
 
 ## Source
 
-`model.mjs` contains the pure fixed-step transition and replay verifier. `app.mjs` handles the original Canvas vector artwork, controls, textual status and downloads. `tests.mjs` exercises determinism, bounded completion, reset behavior, input gates, partial replay, tamper rejection and output ownership. No external media is embedded.
+`model.mjs` contains the pure fixed-step transition and replay verifier. `app.mjs` handles the original Canvas vector artwork, controls, textual status and downloads. `tests.mjs` exercises determinism, bounded completion, reset behavior, input gates, partial replay, tamper rejection and output ownership. A local copy of `narco-tank-1.jpg` is credited to ZestyMasterOfZesty, Wikimedia Commons, CC BY-SA 4.0. The original file is unchanged; the page displays it with responsive sizing and a saturation filter under the same license. See `source-records.json` for exact source, license, provenance limits, and file hash.
 
-The visual treatment uses fictional industrial silhouettes and abstract pulse effects. Cartel Kit's published-source model audit remains a separate, attributed research artifact.
+The visual treatment uses authored pickup and truck studies in an industrial yard, with an oblique projection, weathering, dust, and impact effects. Historical organization attribution is kept in the cited archive rather than used as a gameplay rating. Cartel Kit's published-source model audit remains a separate, attributed research artifact.
