@@ -53,12 +53,13 @@ export function createScene(canvas){
   const scarGroup=new THREE.Group();scene.add(scarGroup);
   let scars=[],lastTick=-1,identity='',cameraMode='action',quality='auto',disposed=false;
   const desired=new THREE.Vector3(),target=new THREE.Vector3(),muzzlePosition=new THREE.Vector3();
-  let cameraSnap=true,shake=0,inspecting=false;
-  controls.addEventListener('start',()=>{if(!garageType){cameraMode='orbit';canvas.dispatchEvent(new CustomEvent('camera-mode-change',{detail:'orbit'}));}inspecting=true;});
+  let cameraSnap=true,shake=0,inspecting=false,playing=false;
+  const rivalMarker=new THREE.Mesh(new THREE.OctahedronGeometry(.55,0),new THREE.MeshBasicMaterial({color:'#ff6b67',depthTest:false}));rivalMarker.visible=false;rivalMarker.renderOrder=5;scene.add(rivalMarker);
+  controls.addEventListener('start',()=>{if(playing)return;if(!garageType){cameraMode='orbit';canvas.dispatchEvent(new CustomEvent('camera-mode-change',{detail:'orbit'}));}inspecting=true;});
   controls.addEventListener('end',()=>{inspecting=false;});
   function resetCosmetics(){particles.length=0;previous.clear();lastTick=-1;shake=0;debris.reset();tracks.reset();for(const scar of scars){scarGroup.remove(scar);scar.geometry.dispose();scar.material.dispose();}scars=[];}
   function ensureTrucks(state){
-    const key=`${state.seed}/${state.pairing}`;
+    const key=`${state.schema}/${state.seed}/${state.pairing}`;
     if(key!==identity||state.tick<lastTick){resetCosmetics();identity=key;cameraSnap=true;}
     for(const vehicle of state.vehicles){
       let truck=trucks.get(vehicle.id);
@@ -93,8 +94,9 @@ export function createScene(canvas){
     for(const vehicle of state.vehicles){
       const truck=trucks.get(vehicle.id),x=vehicle.x/10,z=vehicle.y/10,health=vehicle.shield/VEHICLES[vehicle.type].shield;
       const old=previous.get(vehicle.id)||{x,z,yaw:-vehicle.angle,roll:0};
-      const dx=x-old.x,dz=z-old.z,speed=Math.hypot(dx,dz),heading=speed>.001?Math.atan2(-dz,dx):old.yaw;
-      const yaw=fresh?turn(old.yaw,heading,.18):old.yaw;
+      const dx=x-old.x,dz=z-old.z,speed=Math.hypot(dx,dz),heading=Number.isFinite(vehicle.heading)?-vehicle.heading:speed>.001?Math.atan2(-dz,dx):old.yaw;
+      const yaw=Number.isFinite(vehicle.heading)?heading:fresh?turn(old.yaw,heading,.18):old.yaw;
+      const rollStep=speed/.9*(Number.isFinite(vehicle.speed)&&vehicle.speed<0?-1:1);
       truck.position.set(x,groundHeight(x,z)+(truck.userData.baseHeight||0),z);truck.rotation.y=yaw;
       const contact=contactShadows.get(vehicle.id);contact.position.set(x,groundHeight(x,z)+.04,z);contact.rotation.y=yaw;
       const pitch=(groundHeight(x+Math.cos(yaw)*2,z-Math.sin(yaw)*2)-groundHeight(x-Math.cos(yaw)*2,z+Math.sin(yaw)*2))/4;
@@ -103,14 +105,14 @@ export function createScene(canvas){
       truck.rotation.x=clamp(lean+(running?Math.sin(state.tick*.32+vehicle.id)*.006:0),-.06,.06);
       truck.userData.turret.rotation.y=-vehicle.angle-yaw;
       const firing=state.events.some(event=>event.type==='pulse'&&event.vehicle===vehicle.name&&state.tick-event.tick<3);
-      updateTruck(truck,{health,roll:-(old.roll+speed/.9),steer:clamp(Math.atan2(Math.sin(heading-yaw),Math.cos(heading-yaw)),-.25,.25),recoil:firing?1:0,time:state.tick/30,moving:running&&health>0});
+      updateTruck(truck,{health,roll:-(old.roll+rollStep),steer:clamp(Number.isFinite(vehicle.heading)?Math.atan2(Math.sin(yaw-old.yaw),Math.cos(yaw-old.yaw))*5*(vehicle.speed<0?-1:1):Math.atan2(Math.sin(heading-yaw),Math.cos(heading-yaw)),-.25,.25),recoil:firing?1:0,time:state.tick/30,moving:running&&health>0});
       truck.updateMatrixWorld(true);
       const flash=flashes.get(vehicle.id);truck.userData.muzzle.getWorldPosition(muzzlePosition);muzzleHeights.set(vehicle.id,muzzlePosition.y);flash.socket.position.copy(truck.userData.turret.worldToLocal(muzzlePosition.clone()));flash.flash.visible=firing&&state.status!=='finished';
       if(fresh){
         if(speed>.008&&state.tick%3===0)tracks.add(x-Math.cos(yaw)*3,z+Math.sin(yaw)*3,groundHeight(x,z),yaw);
         if(speed>.008&&state.tick%2===0)for(let p=0;p<3;p++)addParticle('dust',x-Math.cos(yaw)*4,groundHeight(x,z)+.4,z+Math.sin(yaw)*4,state.tick,state.tick*6+p+vehicle.id*17);
         if(health<.62&&(state.tick%3===0||state.status==='finished')){truck.userData.smokeAnchor.getWorldPosition(muzzlePosition);for(let p=0;p<(health===0?6:2);p++)addParticle('smoke',muzzlePosition.x+(noise(p+7)-.5),muzzlePosition.y+p*.7,muzzlePosition.z+(noise(p+2)-.5),state.tick,state.tick+p+vehicle.id*13);}
-        previous.set(vehicle.id,{x,z,yaw,roll:old.roll+speed/.9});
+        previous.set(vehicle.id,{x,z,yaw,roll:old.roll+rollStep});
       }
     }
     if(fresh){
@@ -132,7 +134,13 @@ export function createScene(canvas){
     for(const pulse of state.pulses){const x=pulse.x/10,z=pulse.y/10,owner=state.vehicles[pulse.owner],other=state.vehicles[1-pulse.owner];const progress=clamp(Math.hypot(pulse.x-owner.x,pulse.y-owner.y)/Math.max(1,Math.hypot(other.x-owner.x,other.y-owner.y)),0,1);const y=lerp(muzzleHeights.get(pulse.owner)||3,groundHeight(other.x/10,other.y/10)+2.7,progress);linePositions.set([x-pulse.vx/10*.045,y,z-pulse.vy/10*.045,x,y,z],lineIndex*6);lineIndex++;}
     tracerGeometry.setDrawRange(0,lineIndex*2);tracerGeometry.attributes.position.needsUpdate=true;
     const a=state.vehicles[0],b=state.vehicles[1];
-    if(cameraMode==='action'){
+    rivalMarker.visible=Number.isFinite(a.heading)&&!garageType&&b.shield>0;
+    rivalMarker.position.set(b.x/10,groundHeight(b.x/10,b.y/10)+7.1,b.y/10);rivalMarker.rotation.y=state.tick*.035;
+    if(cameraMode==='driver'){
+      const truck=trucks.get(0),yaw=truck.rotation.y,scale=Math.max(1,.8/camera.aspect);
+      target.set(truck.position.x+Math.cos(yaw)*6,2.5+truck.position.y,truck.position.z-Math.sin(yaw)*6);
+      desired.set(truck.position.x-Math.cos(yaw)*17*scale,truck.position.y+8*scale,truck.position.z+Math.sin(yaw)*17*scale);
+    }else if(cameraMode==='action'){
       const chosen=state.vehicles[Math.floor(state.tick/180)%2],truck=trucks.get(chosen.id),yaw=truck.rotation.y,portrait=Math.max(1,.95/camera.aspect);
       target.set(truck.position.x,2.4+groundHeight(truck.position.x,truck.position.z),truck.position.z);
       desired.set(target.x+Math.cos(yaw+.65)*19*portrait,target.y+5.4*portrait,target.z-Math.sin(yaw+.65)*19*portrait);
@@ -155,6 +163,7 @@ export function createScene(canvas){
   }
   function resize(){const box=canvas.parentElement.getBoundingClientRect();renderer.setSize(Math.max(1,box.width),Math.max(1,box.height),false);camera.aspect=box.width/Math.max(1,box.height);camera.updateProjectionMatrix();cameraSnap=true;}
   function setCamera(mode){cameraMode=mode;cameraSnap=true;}
+  function setPlaying(value){playing=Boolean(value);controls.enabled=!playing;if(playing)inspecting=false;}
   function setLighting(value){
     lighting=Object.hasOwn(LIGHTING,value)?value:'amber';const preset=LIGHTING[lighting];
     backdrop.material.uniforms.zenith.value.set(preset.sky);backdrop.material.uniforms.horizon.value.set(preset.horizon);scene.fog.color.set(preset.fog);
@@ -164,6 +173,7 @@ export function createScene(canvas){
   }
   function setGarage(type,health=1){
     if(type&&!Object.hasOwn(VEHICLES,type))return;
+    rivalMarker.visible=false;
     garageType=type;garageHealth=clamp(health,0,1);garage.visible=Boolean(type);terrain.visible=!type;
     for(const truck of trucks.values())truck.visible=!type;for(const contact of contactShadows.values())contact.visible=!type;
     for(const pool of Object.values(pools))pool.points.visible=!type;tracers.visible=!type;scarGroup.visible=!type;debris.mesh.visible=!type;tracks.mesh.visible=!type;
@@ -174,7 +184,7 @@ export function createScene(canvas){
   function setQuality(value){quality=value;const low=value==='low'||(value==='auto'&&innerWidth<700);renderer.setPixelRatio(low?1:Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=!low;resize();}
   function dispose(){disposed=true;controls.dispose();disposeObject(scene,true);renderer.dispose();}
   setLighting(lighting);setQuality(quality);resize();
-  return {update,resize,setCamera,setQuality,setLighting,setGarage,setDamage,dispose};
+  return {update,resize,setCamera,setQuality,setLighting,setGarage,setDamage,setPlaying,dispose};
 }
 function disposeObject(object,includeShared=false){
   const geometries=new Set(),materials=new Set(),textures=new Set();

@@ -24,7 +24,7 @@ export function createAudio(){
     if(!enabled||!context)return;const now=context.currentTime;
     motorGain.gain.setTargetAtTime(running?.12:0,now,.08);motor.frequency.setTargetAtTime(45+Math.sin(state.tick*.025)*7,now,.08);
     if(state.tick<lastTick)lastTick=-1;
-    if(running&&state.tick!==lastTick){const recent=state.events.filter(e=>e.tick>lastTick&&e.tick<=state.tick);if(recent.some(e=>e.type==='hit'))hit(true);else if(recent.some(e=>e.type==='pulse'))hit(false);}
+    if(running&&state.tick!==lastTick){const recent=state.events.filter(e=>e.tick>lastTick&&e.tick<=state.tick);if(recent.some(e=>e.type==='impact'))hit(true);else if(recent.some(e=>e.type==='pulse'))hit(false);}
     lastTick=state.tick;
   }
   function quiet(){if(context&&motorGain)motorGain.gain.setTargetAtTime(0,context.currentTime,.02);}
