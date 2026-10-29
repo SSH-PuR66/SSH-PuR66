@@ -3,6 +3,8 @@ import * as THREE from './vendor/three.module.js';
 // Visual assemblies use arbitrary scene units. No physical performance is inferred.
 const UNIT_BOX = new THREE.BoxGeometry(1,1,1);
 UNIT_BOX.userData.shared=true;
+const GEOMETRY_CACHE=new Map();
+function sharedGeometry(key,build){if(!GEOMETRY_CACHE.has(key)){const value=build();value.userData.shared=true;GEOMETRY_CACHE.set(key,value);}return GEOMETRY_CACHE.get(key);}
 const PALETTES = {
   cinder:{paint:0x717365,edge:0x92917b,dark:0x434b40,accent:0x805247,label:'Armored civilian pickup'},
   vanta:{paint:0x525e4c,edge:0x7d846c,dark:0x323f33,accent:0x9a8b5e,label:'Armored cargo-truck silhouette'},
@@ -11,12 +13,12 @@ const PALETTES = {
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,Number.isFinite(n)?n:a));
 const noise=(x,y)=>{const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);};
 function surfaceTexture(kind){
-  const size=128,data=new Uint8Array(size*size*4);
+  const size=256,data=new Uint8Array(size*size*4);
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
     const grain=noise(x,y),patch=noise(Math.floor(x/9),Math.floor(y/15));
     let r,g,b;
     if(kind==='rubber'){const v=88+grain*42+(x%17<2?30:0);r=v;g=v+4;b=v;}
-    else {const v=174+grain*49+(Math.sin(x*.12+y*.04)*7),rust=patch>.72&&noise(x*.19,y*.08)>.42;r=rust?v*.86:v;g=rust?v*.64:v;b=rust?v*.43:v*.96;if(x%39===0&&y%8<5){r*=.65;g*=.64;b*=.58;}}
+    else {const v=177+grain*42+(Math.sin(x*.062+y*.031)*12),rust=patch>.77&&noise(x*.11,y*.06)>.42;r=rust?v*.83:v;g=rust?v*.61:v;b=rust?v*.41:v*.96;if((x%71<2&&y%15<11)||(y%89===1&&x%21<16)){r*=.61;g*=.59;b*=.52;}const streak=Math.max(0,Math.sin(x*.18)*Math.cos(y*.011))*.12;r*=1-streak;g*=1-streak;b*=1-streak;}
     const i=(y*size+x)*4;data[i]=r;data[i+1]=g;data[i+2]=b;data[i+3]=255;
   }
   const texture=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);
@@ -46,13 +48,30 @@ function box(parent,size,position,material,name,rotation){
   const item=mesh(parent,UNIT_BOX,material,name);item.scale.set(...size);item.position.set(...position);if(rotation)item.rotation.set(...rotation);return item;
 }
 function cylinder(parent,radius,length,position,material,axis='y',segments=12){
-  const item=mesh(parent,new THREE.CylinderGeometry(radius,radius,length,segments),material);
+  const item=mesh(parent,sharedGeometry(`cylinder-${radius}-${length}-${segments}`,()=>new THREE.CylinderGeometry(radius,radius,length,segments)),material);
   item.position.set(...position);if(axis==='x')item.rotation.z=Math.PI/2;if(axis==='z')item.rotation.x=Math.PI/2;return item;
 }
 function profile(parent,points,width,material,name){
   const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
-  const geometry=new THREE.ExtrudeGeometry(shape,{depth:width,bevelEnabled:false,curveSegments:1,steps:1});geometry.translate(0,0,-width/2);
+  const geometry=sharedGeometry('profile-'+JSON.stringify([points,width]),()=>{const value=new THREE.ExtrudeGeometry(shape,{depth:Math.max(.02,width-.05),bevelEnabled:true,bevelThickness:.025,bevelSize:.025,bevelSegments:1,curveSegments:1,steps:1});value.translate(0,0,-width/2+.025);return value;});
   return mesh(parent,geometry,material,name);
+}
+function loftBody(parent,sections,material,name){
+  // Chamfered rings give the cab shoulders and hood a changing cross-section.
+  const rings=sections.map(([x,bottom,belt,top,width,inset=.17])=>[
+    [x,bottom,-width+.08],[x,bottom+.08,-width],[x,belt,-width],
+    [x,top,-width+inset],[x,top,width-inset],[x,belt,width],
+    [x,bottom+.08,width],[x,bottom,width-.08]
+  ]),vertices=[],uv=[];
+  const face=(a,b,c,d)=>{for(const p of [a,b,c,a,c,d]){vertices.push(...p);uv.push(p[0]*.36,p[1]*.3+p[2]*.16);}};
+  for(let s=0;s<rings.length-1;s++)for(let i=0;i<8;i++)face(rings[s][i],rings[s][(i+1)%8],rings[s+1][(i+1)%8],rings[s+1][i]);
+  for(const [ring,reverse] of [[rings[0],true],[rings.at(-1),false]])for(let i=1;i<7;i++){const tri=reverse?[ring[0],ring[i+1],ring[i]]:[ring[0],ring[i],ring[i+1]];for(const p of tri){vertices.push(...p);uv.push(p[2]*.3,p[1]*.3);}}
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();
+  const item=mesh(parent,geometry,material,name);item.userData.sculptedSections=sections.length;return item;
+}
+function tubeBetween(parent,a,b,radius,material,name){
+  const direction=new THREE.Vector3(...b).sub(new THREE.Vector3(...a)),item=mesh(parent,sharedGeometry('tube-'+radius,()=>new THREE.CylinderGeometry(radius,radius,1,8)),material,name);
+  item.position.copy(new THREE.Vector3(...a).addScaledVector(direction,.5));item.scale.y=direction.length();item.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());return item;
 }
 function quadGeometry(points){
   const geometry=new THREE.BufferGeometry(),vertices=[];
@@ -60,11 +79,28 @@ function quadGeometry(points){
   geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
   geometry.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2));geometry.computeVertexNormals();return geometry;
 }
+function plateGeometry(points){
+  const geometry=new THREE.BufferGeometry(),vertices=[],uv=[],indices=[],segments=4,side=segments+1;
+  const p=points.map(point=>new THREE.Vector3(...point)),normal=p[1].clone().sub(p[0]).cross(p[3].clone().sub(p[0])).normalize();
+  for(const depth of [.018,-.035])for(let y=0;y<=segments;y++)for(let x=0;x<=segments;x++){
+    const u=x/segments,v=y/segments,low=p[0].clone().lerp(p[1],u),high=p[3].clone().lerp(p[2],u),position=low.lerp(high,v).addScaledVector(normal,depth);
+    vertices.push(...position);uv.push(u,v);
+  }
+  for(let y=0;y<segments;y++)for(let x=0;x<segments;x++){
+    const a=y*side+x,b=a+1,c=b+side,d=a+side,offset=side*side;
+    indices.push(a,b,c,a,c,d,a+offset,c+offset,b+offset,a+offset,d+offset,c+offset);
+  }
+  const border=[];for(let x=0;x<=segments;x++)border.push(x);for(let y=1;y<=segments;y++)border.push(y*side+segments);for(let x=segments-1;x>=0;x--)border.push(segments*side+x);for(let y=segments-1;y>0;y--)border.push(y*side);
+  for(let i=0;i<border.length;i++){const a=border[i],b=border[(i+1)%border.length],offset=side*side;indices.push(a,a+offset,b+offset,a,b+offset,b);}
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();
+  geometry.userData.basePositions=new Float32Array(vertices);geometry.userData.plateNormal=normal;geometry.userData.damage=0;
+  return geometry;
+}
 function panel(parent,points,material,name,damagePanels,axis='x'){
   // A seam edge is the pivot, so progressive damage opens a panel from its seam.
   const origin=new THREE.Vector3(...points[0]),relative=points.map(p=>[p[0]-origin.x,p[1]-origin.y,p[2]-origin.z]);
   const mat=material.clone();mat.side=THREE.DoubleSide;
-  const value=mesh(parent,quadGeometry(relative),mat,name);value.position.copy(origin);
+  const value=mesh(parent,plateGeometry(relative),mat,name);value.position.copy(origin);
   value.userData.basePosition=value.position.clone();value.userData.baseRotation=value.rotation.clone();value.userData.damageAxis=axis;
   value.userData.baseColor=mat.color.clone();value.userData.damageOrder=damagePanels.length;damagePanels.push(value);return value;
 }
@@ -93,25 +129,43 @@ function batchStaticBoxes(parent){
     batch.name='Fixed body fittings';batch.userData.parts=parts.map(part=>part.name);parent.add(batch);
   }
 }
+function batchRepeatedMeshes(parent){
+  const groups=new Map();
+  for(const child of [...parent.children]){
+    if(!child.isMesh||child.isInstancedMesh||child.userData.basePosition)continue;
+    const key=child.geometry.uuid+'/'+child.material.uuid,parts=groups.get(key)||[];parts.push(child);groups.set(key,parts);
+  }
+  for(const parts of groups.values())if(parts.length>1){
+    const batch=new THREE.InstancedMesh(parts[0].geometry,parts[0].material,parts.length);batch.name=parts[0].name+' assembly';batch.userData.parts=parts.map(part=>part.name);
+    parts.forEach((part,i)=>{part.updateMatrix();batch.setMatrixAt(i,part.matrix);parent.remove(part);});batch.castShadow=true;batch.receiveShadow=true;batch.instanceMatrix.needsUpdate=true;parent.add(batch);
+  }
+}
 function wheel(parent,x,z,radius,materials,front){
   const carrier=new THREE.Group();carrier.position.set(x,radius,z);carrier.name=front?'Steered front wheel':'Rear wheel';parent.add(carrier);
   const spin=new THREE.Group();carrier.add(spin);carrier.userData.spin=spin;carrier.userData.front=front;carrier.userData.basePosition=carrier.position.clone();
-  cylinder(spin,radius,.58,[0,0,0],materials.rubber,'z',24);
+  const tireProfile=[ [.48,-.285],[.63,-.335],[.81,-.347],[.95,-.275],[.99,-.16],[1,0],[.99,.16],[.95,.275],[.81,.347],[.63,.335],[.48,.285] ].map(([r,y])=>new THREE.Vector2(r*radius,y));
+  const tire=mesh(spin,sharedGeometry('tire-'+radius,()=>new THREE.LatheGeometry(tireProfile,36)),materials.rubber,'Rounded tire carcass');tire.rotation.x=Math.PI/2;
   for(const side of [-1,1]){
-    const bead=mesh(spin,new THREE.TorusGeometry(radius*.83,radius*.11,6,24),materials.rubber);bead.position.z=side*.285;
-    cylinder(spin,radius*.49,.035,[0,0,side*.316],materials.bare,'z',16);
-    cylinder(spin,radius*.25,.055,[0,0,side*.35],materials.frame,'z',10);
+    const bead=mesh(spin,sharedGeometry('sidewall-'+radius,()=>new THREE.TorusGeometry(radius*.72,.018,4,36)),materials.rubber,'Raised sidewall seam');bead.position.z=side*.348;
+    const rim=mesh(spin,sharedGeometry('wheel-rim-'+radius,()=>new THREE.TorusGeometry(radius*.475,.043,6,24)),materials.bare,'Rolled wheel rim');rim.position.z=side*.321;
+    cylinder(spin,radius*.455,.045,[0,0,side*.291],materials.dark,'z',24);
+    cylinder(spin,radius*.255,.1,[0,0,side*.337],materials.bare,'z',12);
+    const hub=mesh(spin,sharedGeometry('hub-'+radius,()=>new THREE.CylinderGeometry(radius*.14,radius*.2,.1,8)),materials.frame,'Recessed axle hub');hub.rotation.x=Math.PI/2;hub.position.z=side*.41;
   }
-  const treadGeometry=new THREE.BoxGeometry(.23,.12,.62),treads=new THREE.InstancedMesh(treadGeometry,materials.rubber,28),dummy=new THREE.Object3D();
-  for(let i=0;i<28;i++){const a=i*Math.PI*2/28;dummy.position.set(Math.cos(a)*(radius+.01),Math.sin(a)*(radius+.01),0);dummy.rotation.set(0,0,a+Math.PI/2);dummy.updateMatrix();treads.setMatrixAt(i,dummy.matrix);}
+  const treadGeometry=sharedGeometry('tread-chevron',()=>new THREE.BoxGeometry(.20,.065,.235)),treads=new THREE.InstancedMesh(treadGeometry,materials.rubber,72),dummy=new THREE.Object3D();
+  for(let i=0;i<36;i++)for(const [j,side] of [-1,1].entries()){const a=(i+(side>0?.2:0))*Math.PI*2/36;dummy.position.set(Math.cos(a)*(radius-.005),Math.sin(a)*(radius-.005),side*.145);dummy.rotation.set(0,side*.44,a+Math.PI/2);dummy.updateMatrix();treads.setMatrixAt(i*2+j,dummy.matrix);}
+  treads.name='Interlocking tire tread blocks';
   treads.castShadow=true;treads.receiveShadow=true;spin.add(treads);
+  const holes=new THREE.InstancedMesh(sharedGeometry('rim-vents',()=>new THREE.CylinderGeometry(.055,.055,.012,8)),materials.black,16);
+  for(const [sideIndex,side] of [-1,1].entries())for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8;dummy.position.set(Math.cos(a)*radius*.36,Math.sin(a)*radius*.36,side*.32);dummy.rotation.set(Math.PI/2,0,0);dummy.updateMatrix();holes.setMatrixAt(sideIndex*8+i,dummy.matrix);}holes.name='Wheel ventilation recesses';spin.add(holes);
   const nuts=[];for(const side of [-1,1])for(let i=0;i<8;i++){const a=i*Math.PI/4;nuts.push([Math.cos(a)*radius*.36,Math.sin(a)*radius*.36,side*.347,'z']);}boltBatch(spin,nuts,materials.bare);
+  batchRepeatedMeshes(spin);
   return carrier;
 }
 function fender(parent,x,z,radius,material){
   const outer=radius+0.23,inner=radius+.1,shape=new THREE.Shape();
   shape.moveTo(outer,0);shape.absarc(0,0,outer,0,Math.PI,false);shape.lineTo(-inner,0);shape.absarc(0,0,inner,Math.PI,0,true);shape.closePath();
-  const geometry=new THREE.ExtrudeGeometry(shape,{depth:.34,bevelEnabled:false,curveSegments:14,steps:1});geometry.translate(0,0,-.17);
+  const geometry=sharedGeometry('fender-'+radius,()=>{const value=new THREE.ExtrudeGeometry(shape,{depth:.29,bevelEnabled:true,bevelSize:.025,bevelThickness:.025,bevelSegments:1,curveSegments:18,steps:1});value.translate(0,0,-.145);return value;});
   const item=mesh(parent,geometry,material,'Wheel arch');item.position.set(x,radius,z);return item;
 }
 function windowPane(parent,points,materials,windows,name){
@@ -144,19 +198,29 @@ export function createTruck(type='cinder'){
   const axles=cargo?[3.45,-2.8,-4.5]:[3.25,-3.25];
   for(const x of axles){
     cylinder(truck,.13,width+.35,[x,radius,0],materials.frame,'z',10);
+    const differential=mesh(truck,sharedGeometry('differential',()=>new THREE.IcosahedronGeometry(.34,1)),materials.frame,'Axle differential');differential.position.set(x,radius,0);differential.scale.set(1,.82,1.1);
     for(const z of [-(width/2+.03),width/2+.03])wheels.push(wheel(truck,x,z,radius,materials,x>0));
   }
   for(const z of [-.85,.85])box(body,[front-rear,.22,.22],[(front+rear)/2,1.08,z],materials.frame,'Longitudinal chassis rail');
   for(const x of [-3.7,-1.4,1.1,3.6])box(body,[.19,.18,2.15],[x,1.08,0],materials.frame);
-  box(body,[front-rear-.2,.45,width-.4],[(front+rear)/2,1.53,0],materials.dark,'Sill and underbody');
+  box(body,[front-rear-.2,.21,width-.4],[(front+rear)/2,1.49,0],materials.dark,'Sill and underbody');
+  tubeBetween(body,[axles.at(-1),.98,0],[axles[0],.98,0],.085,materials.bare,'Exposed prop shaft');
+  for(const x of axles)for(const z of [-.95,.95]){
+    for(let layer=0;layer<3;layer++){
+      const span=.95-layer*.16;
+      profile(body,[[-span,1.24],[0,1.10-layer*.045],[span,1.24],[span,1.28],[0,1.15-layer*.045],[-span,1.28]],.12,materials.frame,'Layered leaf spring');
+      const spring=body.children.at(-1);spring.position.set(x,0,z);
+    }
+    tubeBetween(body,[x-.31,radius-.03,z],[x+.11,1.52,z],.07,materials.bare,'Angled suspension damper');
+  }
   for(const z of [-width/2,width/2]){
     box(body,[3,.1,.4],[.15,1.14,z],materials.frame,'Running step');
     for(const x of axles)fender(body,x,z,radius,materials.paint);
   }
 
   // Civilian cab proportions remain legible beneath the added plates.
-  profile(body,[[-.6,1.65],[-.6,2.95],[.25,3.83],[1.8,3.83],[2.8,2.7],[2.8,1.65]],3.34,materials.paint,'Armored civilian cab');
-  profile(body,[[2.72,1.6],[2.72,2.7],[4.75,2.47],[5.18,2.12],[5.18,1.6]],3.38,materials.paint,'Sloped hood');
+  loftBody(body,[[-.62,1.63,2.85,2.99,1.65,.08],[.23,1.63,2.96,3.82,1.68,.19],[1.75,1.63,2.96,3.82,1.68,.19],[2.78,1.63,2.57,2.73,1.60,.12]],materials.paint,'Sculpted tapered civilian cab');
+  loftBody(body,[[2.70,1.61,2.42,2.70,1.66,.16],[3.18,1.61,2.42,2.69,1.69,.15],[4.72,1.61,2.19,2.46,1.64,.13],[5.18,1.61,1.99,2.12,1.48,.12]],materials.paint,'Compound sloping hood and quarters');
   const hood=panel(body,[[2.72,2.725,-1.68],[4.77,2.495,-1.68],[4.77,2.495,1.68],[2.72,2.725,1.68]],materials.paint,'Overlaid hood plate',damagePanels,'z');
   hood.userData.damageStrength=.55;
   for(const side of [-1,1]){
@@ -234,6 +298,39 @@ export function createTruck(type='cinder'){
   for(const z of [-1.15,1.15]){const light=box(body,[.13,.34,.26],[rear-.1,1.61,z],materials.red.clone(),'Tail lamp');lights.push(light);}
   for(const z of [-1.65,1.65])box(body,[.15,.7,.78],[rear+.3,.7,z],materials.rubber,'Rear mudflap');
   for(const z of [-1.4,1.4])cylinder(body,.07,1.5,[-3.3,1.25,z],materials.rust,'x',8);
+  for(const side of [-1,1]){
+    const z=side*1.73;
+    tubeBetween(body,[-.38,2.98,z],[.31,3.72,side*1.52],.025,materials.edge,'Cab window weatherstrip');
+    tubeBetween(body,[.31,3.72,side*1.52],[1.66,3.72,side*1.52],.025,materials.edge,'Cab roof drip rail');
+    tubeBetween(body,[1.66,3.72,side*1.52],[2.35,2.94,z],.025,materials.edge,'Sloping window pillar');
+    tubeBetween(body,[2.49,2.97,side*.18],[2.16,3.32,side*.75],.024,materials.black,'Windshield wiper');
+    box(body,[.68,.16,.07],[3.81,2.20,side*1.69],materials.dark,'Recessed quarter panel vent');
+    for(let vent=0;vent<5;vent++)box(body,[.045,.13,.09],[3.55+vent*.13,2.20,side*1.72],materials.edge,'Quarter vent slat');
+    for(const x of [.18,1.07])box(body,[.65,.035,.32],[x,1.21,side*1.75],materials.bare,'Step tread insert');
+    tubeBetween(body,[-.48,2.3,side*1.79],[-.48,2.73,side*1.79],.035,materials.bare,'External grab handle');
+    for(const y of [2.3,2.73])tubeBetween(body,[-.48,y,side*1.70],[-.48,y,side*1.79],.035,materials.bare,'Handle return');
+    if(cargo){
+      for(let rib=0;rib<11;rib++)box(body,[.052,1.34,.06],[rear+.3+rib*.41,2.75,side*1.91],materials.edge,'Shallow cargo corrugation');
+      tubeBetween(body,[-.73,1.23,side*1.27],[-.73,4.45,side*1.27],.095,materials.rust,'External exhaust stack');
+      cylinder(body,.14,.18,[-.73,4.48,side*1.27],materials.frame,'y',10);
+    }else{
+      const slot=box(body,[.64,.14,.055],[-2.65,2.91,side*(closed?1.79:1.58)],materials.black,'Inset dark shell detail');slot.rotation.x=side*(closed?0:.30);
+      box(body,[.7,.05,.065],[-2.65,2.82,side*(closed?1.81:1.61)],materials.edge,'Inset lower seam');
+    }
+    box(body,[.07,.09,.49],[5.43,2.05,side*1.46],materials.dark,'Headlamp lens divider');
+  }
+  // Dense small fittings are instanced after construction, preserving the larger silhouettes.
+  const doorX=rear-.16;
+  for(const z of [-.63,.63]){
+    tubeBetween(body,[doorX,2.13,z],[doorX,2.53,z],.035,materials.bare,'Rear door pull');
+    for(const y of [2.13,2.53])tubeBetween(body,[rear-.04,y,z],[doorX,y,z],.035,materials.bare,'Rear handle mount');
+  }
+  const seamSegments=[];
+  for(const side of [-1,1]){
+    seamSegments.push([[-.53,1.76,side*1.733],[2.42,1.76,side*1.733]],[[2.42,1.76,side*1.733],[2.42,2.57,side*1.733]]);
+    for(let i=0;i<10;i++){const x=2.83+i*.19;seamSegments.push([[x,2.71-(x-2.72)*.112,side*1.57],[x+.09,2.70-(x-2.72)*.112,side*1.57]]);}
+  }
+  segmentLines(body,seamSegments,0x252b22);
   for(const x of [3.2,4.3])for(const z of [-1.47,1.47])bolts.push([x,2.64-(x-2.7)*.11,z,'y']);
   boltBatch(body,bolts,materials.bare);
   segmentLines(body,[[[2.73,2.74,-1.7],[4.77,2.51,-1.7]],[[2.73,2.74,1.7],[4.77,2.51,1.7]],[[-.61,1.7,-1.7],[-.61,2.96,-1.7]],[[-.61,1.7,1.7],[-.61,2.96,1.7]]]);
@@ -246,6 +343,8 @@ export function createTruck(type='cinder'){
   const damageMaterials=[...Object.values(materials)].filter(m=>!m.transparent&&!['rubber','lamp','amber','red'].includes(Object.keys(materials).find(k=>materials[k]===m)));
   for(const material of damageMaterials)material.userData.baseColor=material.color.clone();
   batchStaticBoxes(body);
+  batchRepeatedMeshes(body);
+  batchRepeatedMeshes(truck);
   truck.userData={type,label:palette.label,wheels,turret,muzzle,damagePanels,smokeAnchor,baseHeight:.07,body,materials,damageMaterials,windows,lights,scorches,visualOnly:true};
   for(const light of lights){light.userData.baseColor=light.material.color.clone();light.userData.baseEmissive=light.material.emissiveIntensity;}
   updateTruck(truck,{health:1,roll:0,steer:0,recoil:0,time:0,moving:false});
@@ -265,6 +364,15 @@ export function updateTruck(truck,{health=1,roll=0,steer=0,recoil=0,time=0,movin
     if(wreck&&order%4===1){panel.rotation[panel.userData.damageAxis]+=direction*.43*strength;panel.position.y-=.15;}
     panel.position.y-=amount*.06;panel.scale.y=1-amount*.07;
     panel.material.color.copy(panel.userData.baseColor).lerp(smokeShade,damage*(.4+(order%3)*.09));
+    if(panel.geometry.userData.damage!==amount){
+      const geometry=panel.geometry,base=geometry.userData.basePositions,normal=geometry.userData.plateNormal,position=geometry.attributes.position,uv=geometry.attributes.uv;
+      for(let i=0;i<position.count;i++){
+        const u=uv.getX(i),v=uv.getY(i),distance=(u-(.3+(order%3)*.2))**2+(v-.55)**2;
+        const dent=Math.exp(-distance*24)*Math.sin(u*Math.PI)*Math.sin(v*Math.PI)*amount*(.2+(order%4)*.04);
+        position.setXYZ(i,base[i*3]-normal.x*dent,base[i*3+1]-normal.y*dent,base[i*3+2]-normal.z*dent);
+      }
+      position.needsUpdate=true;geometry.computeVertexNormals();geometry.computeBoundingSphere();geometry.userData.damage=amount;
+    }
   }
   for(let i=0;i<data.wheels.length;i++){
     const carrier=data.wheels[i];carrier.position.copy(carrier.userData.basePosition);

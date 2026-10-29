@@ -177,24 +177,13 @@ function ridge(parent, material, x, z, width, depth, height, phase, angle = 0) {
 }
 
 function scrubGeometry() {
-  const vertices = [], normals = [], uvs = [];
-  // Three irregular fans give scrub volume without transparent sprite sorting.
-  for (let side = 0; side < 3; side++) {
-    const a = side * Math.PI / 3, dx = Math.cos(a), dz = Math.sin(a);
-    for (let stem = 0; stem < 3; stem++) {
-      const offset = (stem - 1) * .25, height = stem === 1 ? .85 : .58;
-      const points = [[offset - .12, 0], [offset + .13, 0], [offset + (stem - 1) * .2, height]];
-      for (const [x, y] of points) {
-        vertices.push(x * dx, y, x * dz);
-        normals.push(-dz, .25, dx); uvs.push(x + .5, y);
-      }
-    }
+  const vertices=[],uvs=[];
+  for(let stem=0;stem<18;stem++){
+    const angle=stem*2.39996,dx=Math.cos(angle),dz=Math.sin(angle),h=.32+(stem%5)*.12,bend=.22+(stem%3)*.12;
+    const at=(t,side)=>{const spread=.028*(1-t)+.003;return [dx*(t*t*bend)+dz*spread*side,h*(Math.sin(t*1.3)),-dx*spread*side+dz*t*t*bend];};
+    for(let j=0;j<4;j++){const t=j/4,u=(j+1)/4;for(const [p,v] of [[at(t,-1),[0,t]],[at(t,1),[1,t]],[at(u,-1),[0,u]],[at(t,1),[1,t]],[at(u,1),[1,u]],[at(u,-1),[0,u]]]){vertices.push(...p);uvs.push(...v);}}
   }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-  geometry.computeVertexNormals(); return geometry;
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.computeVertexNormals();return geometry;
 }
 
 /** Creates an owned, static scene group. Lighting, fog and camera belong to the caller. */
@@ -285,7 +274,7 @@ export function createTerrain() {
     plants.push({ x, y: groundHeight(x, z) - .02, z, sx: size, sy: size * (.8 + random() * .5), sz: size,
       ry: random() * TAU, color: ['#9e9a6c', '#b5a879', '#857e58', '#c3b887'][i % 4] });
   }
-  instances(group, new THREE.IcosahedronGeometry(1, 0), materials.rock, 'peripheral-stone-field', stones);
+  instances(group, new THREE.IcosahedronGeometry(1, 1), materials.rock, 'peripheral-stone-field', stones);
   instances(group, scrubGeometry(), materials.scrub, 'dry-scrub-clusters', plants);
 
   // A low industrial edge gives the scene an identifiable place and scale.

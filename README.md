@@ -37,7 +37,7 @@ The hard part is separating a convincing explanation from a result that survives
 
 ## Interactive systems
 
-[Monstros Arena](https://sergrdz.pages.dev/labs/monstros/) combines a licensed historical vehicle photograph, attributed seizure and destruction records, and a WebGL 2 desert yard with three original truck meshes, chase/orbit cameras, rotating wheels, impact effects, and progressive body damage. Twenty-one geometry and damage checks accompany its seeded arcade engine, which produces a bounded event ledger and recomputable replay files. Fourteen engine checks cover determinism, invalid inputs, tampered events and terminal tick padding. The fictional rules are separate from [Cartel Kit’s sourced model audit](https://sergrdz.pages.dev/case-studies/cartelkit). [Inspect the engine and tests](https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/monstros).
+[Monstros Arena](https://sergrdz.pages.dev/labs/monstros/) combines a licensed historical vehicle photograph, attributed seizure and destruction records, and a WebGL 2 garage and desert yard with three sculpted truck meshes, rounded tires, visible suspension, vertex-level dents, a damage scrubber, cinematic cameras, three lighting presets, optional synthesized sound, and bounded particle/debris/trail effects. Thirty-seven geometry, damage, and presentation checks accompany its seeded arcade engine, which produces a bounded event ledger and recomputable replay files. Fourteen engine checks cover determinism, invalid inputs, tampered events and terminal tick padding. The fictional rules are separate from [Cartel Kit’s sourced model audit](https://sergrdz.pages.dev/case-studies/cartelkit). [Inspect the engine and tests](https://github.com/SSH-PuR66/SSH-PuR66/tree/main/labs/monstros).
 
 [Discuss a scoped project](https://sergrdz.pages.dev/work-with-me): a bounded source review, a reproducible fixture, or an interactive technical demo. Deliverables, fee, schedule and acceptance criteria are agreed before work begins.
 
@@ -48,3 +48,7 @@ The hard part is separating a convincing explanation from a result that survives
 **Internship focus:** offensive security, vulnerability research, reverse engineering, application security, and adversarial evaluation.
 
 Hudson Valley / NYC metro · [sergio.w.rdz@gmail.com](mailto:sergio.w.rdz@gmail.com)
+
+### Adversarial research updates · 28 October 2026
+
+[Faultline saved-record integrity](https://github.com/SSH-PuR66/cutline/commit/a7ac40200bc664e3d2c27d6a8a98828c2323b188) adds 24 adversarial checks for duplicate records, source-list replacement, invalid addresses, and inconsistent arithmetic witnesses. [Sealbreak stateful campaign](https://github.com/SSH-PuR66/countersign/blob/main/evidence/stateful-campaign-2026-10-28.json) records 832 local gate decisions: 704 rejected mutations, 64 accepted controls, and 64 rejected replays, with zero mismatches. Both final commits passed CI on Python 3.12 and 3.14. These results concern local fixtures and recorded evidence, not third-party exploitation or accepted vulnerability reports.

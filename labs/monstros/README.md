@@ -11,9 +11,13 @@ From the repository root:
 ```text
 node labs/monstros/tests.mjs
 node labs/monstros/tests3d.mjs
+node labs/monstros/tests-mesh-detail.mjs
+node labs/monstros/tests-presentation.mjs
 ```
 
-The browser begins paused. Drag the scene to orbit and scroll to zoom. Select Cinematic, either Follow camera, or Free orbit; use Expand for fullscreen. Select a pairing and integer seed, then Run, Pause, Step, or Reset. Focus the arena for keyboard controls: Space toggles playback, Right Arrow advances one tick while paused, and R resets. Reduced-motion preferences keep the initial scene still and pause an active match if that preference changes. Hiding the page or scrolling the arena off screen also pauses playback. Auto detail disables shadows on narrow screens; Low detail caps the pixel ratio at one.
+The browser opens in the garage. Choose any of the three truck studies, drag to orbit, scroll to zoom, and use the damage slider to inspect or repair the mesh. This inspection does not modify a match or its replay. Enter the duel to run the fixed-step engine. The Action director switches close camera subjects every six simulated seconds; Wide cinematic, either Follow camera, and Free orbit remain available. Golden hour, Blue hour and Overcast change the lighting without changing the match. Expand uses native fullscreen, with an in-page fallback. Sound is synthesized locally and starts only after selecting Sound on.
+
+Select a pairing and integer seed, then Run, Pause, Step, or Reset. Focus the arena for keyboard controls: Space toggles playback, Right Arrow advances one tick while paused, and R resets. Reduced-motion preferences keep the initial scene still and pause an active match if that preference changes. Hiding the page or scrolling the arena off screen also pauses playback and quiets audio. Auto detail disables shadows on narrow screens; Low detail caps the pixel ratio at one. Add `?duel=1` to begin in the paused arena rather than the garage.
 
 The `?embed=1` view is the compact version used on the Cartel Kit page. It uses the same engine and controls.
 
@@ -37,6 +41,8 @@ This establishes consistency with this engine, not authenticity or a digital sig
 `model.mjs` contains the unchanged pure fixed-step transition and replay verifier. `app3d.mjs` owns playback, controls, status and downloads. `scene3d.mjs` owns the renderer, cameras, lighting, particles, tracers and resource teardown. `trucks3d.mjs` constructs the authored meshes and reversible damage states. `terrain3d.mjs` builds the seeded ground, ruts, vegetation, hills and yard structures. `app.mjs` retains the prior 2D presentation for source history and is not loaded by this page.
 
 `tests.mjs` exercises determinism, bounded completion, reset behavior, input gates, partial replay, tamper rejection and output ownership. `tests3d.mjs` checks geometry, damage reset, anchors and terrain contracts. The UI calls game shield points “hull” without changing the replay schema or interpreting those points as armor strength.
+
+The detail revision adds compound tapered and chamfered cab/hood sections, rounded tire profiles and staggered tread, recessed wheels, chassis shafts, leaf springs, dampers, door hardware, and closed plate meshes whose vertices dent progressively. Repair restores the original vertex positions exactly. `tests-mesh-detail.mjs` checks these contracts. `presentation3d.mjs` builds the garage, sky, bounded fragment pool and wheel-trail ring buffer; seven checks in `tests-presentation.mjs` cover finite geometry, capacities, expiry and reset. `audio3d.mjs` owns the optional Web Audio lifecycle. The 14 engine, 21 original 3D, 9 mesh-detail and 7 presentation checks total 51 passing checks for this revision. Browser visuals and controls require separate verification.
 
 A local copy of `narco-tank-1.jpg` is credited to ZestyMasterOfZesty, Wikimedia Commons, CC BY-SA 4.0. The original file is unchanged; the page displays it with responsive sizing and a saturation filter under the same license. See `source-records.json` for exact source, license, provenance limits, and file hash. The photograph-informed original truck visual studies are also provided under CC BY-SA 4.0 with that attribution; renderer dependencies retain their MIT license in `vendor/THREE-LICENSE.txt`.
 
